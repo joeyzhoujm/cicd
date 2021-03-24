@@ -1,0 +1,57 @@
+# 使用 Gitlab 的 CICD ，只需要在 Gitlab 的仓库的根目录中添加 .gitlab-ci.yml 文件。
+# 这个文件中，可以定义CICD 的各个环节，配置每个环节执行的命令，触发方式等。
+# 这个配置文件其实就是按照 YAML 规定了一些结构的 shell 脚本，里面的命令会在符合条件时逐一执行。
+# 一旦在仓库中添加这个文件，Gitlab 会检测到它并用名为 Gitlab Runner 工具执行它。
+# 每次触发的 CICD 会把配置中的脚划分为不同的 job，多个 job 组成一个 pipeline。最简单的 .gitlab-ci.yml 文件可以包含：
+
+before_script:
+  - export ROOT_PATH=$(pwd)
+  - echo 'root path:' $ROOT_PATH
+  - mkdir $PROJECT_REPO_NAME
+  - cd $PROJECT_REPO_NAME
+  - <some git manipulation here>
+  - echo 'date:' $DATE
+  - apt-get install rubygems ruby-dev -y
+
+run-test:
+  script:
+    - ruby --version
+
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  GIT_STRATEGY: none
+  PROJECT_REPO_NAMESPACE: test
+  PROJECT_REPO_NAME: cicd_learn
+  DEPLOYMENT_REPO_NAMESPACE: test
+  DEPLOYMENT_REPO_NAME: deploy_test
+
+test_stage:
+  stage: test
+  script:
+    - <test related command here>
+  artifacts:
+    paths:
+      - xxxx.html
+    when: always
+  allow_failure: false
+
+build_stage:
+  stage: build
+  script:
+     - <build related command here>
+  when: manual
+  allow_failure: false
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - <deploy related command here>
+  allow_failure: false
+  only:
+    - master

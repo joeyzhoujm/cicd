@@ -1,0 +1,31 @@
+version: '3'
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: "gitlab"
+    hostname: "gitlab"
+    restart: always
+    privileged: true
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://joey.centos.7.64:8929' 
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "smtp.163.com"
+        gitlab_rails['smtp_port'] = 465
+        gitlab_rails['smtp_user_name'] = "raycurtis@163.com"  
+        gitlab_rails['smtp_password'] = "RRNXFS2NFARDFSFYY"    
+        gitlab_rails['smtp_domain'] = "163.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = true
+        gitlab_rails['gitlab_email_from'] = 'raycurtis@163.com'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+    ports:
+      - '8929:8929'
+      - '5443:443'
+      - '2224:22'
+    volumes:
+      - './config:/etc/gitlab'
+      - './logs:/var/log/gitlab'
+      - './data:/var/opt/gitlab'

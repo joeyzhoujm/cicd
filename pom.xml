@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.4.3</version>
+        <relativePath /> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.joey.zhou</groupId>
+    <artifactId>cicd</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cicd</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+        <testng.version>7.0.0</testng.version>
+        <reportng.version>1.1.4</reportng.version>
+
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <!-- 去掉springboot默认配置的Log4j，因为使用的Log4j2-->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <!-- 引入log4j2依赖 -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.codeborne/selenide -->
+        <dependency>
+            <groupId>com.codeborne</groupId>
+            <artifactId>selenide</artifactId>
+            <version>5.8.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium-support</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.testng/testng -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <!--    <scope>com.sgcc.hnxt.test</scope> -->
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.uncommons/reportng -->
+        <dependency>
+            <groupId>org.uncommons</groupId>
+            <artifactId>reportng</artifactId>
+            <version>${reportng.version}</version>
+            <!--    <scope>com.sgcc.hnxt.test</scope> -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>utf8</encoding>
+                    <!--<compilerArgs>-Dfile.encoding=UTF-8</compilerArgs>-->
+                </configuration>
+            </plugin>
+            <plugin>
+                <!--热部署配置-->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!--fork:如果没有该项配置,整个devtools不会起作用-->
+                    <fork>true</fork>
+                    <mainClass>com.joey.cicd.CicdApplication</mainClass>
+                    <layout>JAR</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 加入maven-surefire-plugin插件用来使用maven执行用例，其中suiteXmlFile配置的就是testNG用例执行文件的地址 -->
+            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+            <!-- 添加插件,添加ReportNg的监听器，修改最后的TestNg的报告 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <configuration>
+                    <!--测试失败后，是否忽略并继续测试-->
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <suiteXmlFiles>
+                        <!--要执行的TestNg测试套件名称入口，可以在这个Xml中定义其他套件-->
+                        <suiteXmlFile>./src/main/resources/testng/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <!-- 加入编码设置，否则生成的报告会中文乱码 -->
+                    <argLine>-Dfile.encoding=UTF8</argLine>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                    </argLine>
+                    <workingDirectory>target/</workingDirectory>
+                    <systemPropertyVariables>
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+                        <allure.link.mylink.pattern>http://10.223.248.123:8087/zentao/bug-view-{}.html</allure.link.mylink.pattern>
+                        <allure.link.issue.pattern>http://example.org/browse/{}</allure.link.issue.pattern>
+                        <allure.link.tms.pattern>http://example.org/browse/{}</allure.link.tms.pattern>
+                        <org.uncommons.reportng.escape-output>false</org.uncommons.reportng.escape-output>
+                    </systemPropertyVariables>
+                    <properties>
+                        <property>
+                            <name>usedefaultlisteners</name>
+                            <value>false</value>
+                        </property>
+                        <property>
+                            <name>listener</name>
+                            <value>org.uncommons.reportng.HTMLReporter</value>
+                        </property>
+                        <property>
+                            <name>junit</name>
+                            <value>false</value>
+                        </property>
+                    </properties>
+                    <!-- <forkMode>always</forkMode> -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <!-- I don't specify version at all (Spring Boot can autoconfigure plugin version) -->
+                <executions>
+                    <execution>
+                        <!-- changed <id> to <phase>, but I don't know whether it's important or not. -->
+                        <phase>integration-test</phase>
+                        <!-- ... no changes here: the same as in the question ... -->
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <!--docker镜像相关的配置信息-->
+                <configuration>
+                    <!--镜像名，这里用工程名-->
+                    <imageName>${project.artifactId}-${project.version}</imageName>
+                    <!--Dockerfile文件所在目录-->
+                    <dockerDirectory>
+                        ${project.basedir}/src/main/resources
+                    </dockerDirectory>
+                    <!--TAG,这里用工程版本号-->
+                    <imageTags>
+                        <imageTag>${project.version}</imageTag>
+                    </imageTags>
+                    <registryUrl>192.168.25.130:5000</registryUrl>
+                    <pushImage>true</pushImage>
+                    <imageName>
+                        192.168.25.130:5000/${project.artifactId}:${project.version}
+                    </imageName>
+                    <!--构建镜像的配置信息-->
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>
+                                ${project.artifactId}-${project.version}.jar
+                            </include>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--<targetPath>../classes/</targetPath>-->
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>*/*.xml</include>
+                    <include>**/*.yml</include>
+                    <include>*/*.yml</include>
+                    <include>**/*.txt</include>
+                    <include>*/*.txt</include>
+                    <include>**/*.xlsx</include>
+                    <include>*/*.xlsx</include>
+                    <include>**/*.docx</include>
+                    <include>*/*.docx</include>
+                    <include>*/*.exe</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+</project>

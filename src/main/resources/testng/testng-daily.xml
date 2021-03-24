@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="testng-daily" parallel="classes" thread-count="1">
+    <listeners>
+<!--        <listener class-name="com.sgcc.hnxt.test.listener.VerifyListener"/>-->
+<!--        <listener class-name="com.sgcc.hnxt.test.listener.AllureReportListener"/>-->
+    </listeners>
+    <test verbose="2" preserve-order="true" name="IndicatorTest">
+        <parameter name="testDriverType" value="CHROME"/>
+        <parameter name="testEnv" value="production"/>
+        <classes>
+            <!--检查百度-->
+            <class name="com.joey.zhou.cicd.test.SearchBaiduTest"/>
+        </classes>
+    </test>
+</suite>
